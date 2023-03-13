@@ -160,6 +160,7 @@ function App() {
         <Button onClick={handleTogglePlay}>{started() ? 'Pause' : 'Play'}</Button>
       </div>
       <div class="grid gap-2">
+        {tracks.loading && 'LADEN...'}
         <For each={tracks()}>
           {(_, i) => (
             <Slider
