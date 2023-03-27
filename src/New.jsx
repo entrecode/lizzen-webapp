@@ -81,7 +81,7 @@ function handlePrev() {
     const currentIndex = playlist().indexOf(currentMeditation());
     const prev = playlist()[(currentIndex - 1 + playlist().length) % playlist().length];
     setCurrentMeditation(prev);
-    !paused() && handlePlay(prev.files.sound);
+    handlePlay(prev.files.sound);
   } else {
     audio.currentTime = 0;
   }
@@ -94,7 +94,7 @@ function handleNext() {
     const currentIndex = playlist().indexOf(currentMeditation());
     const next = playlist()[(currentIndex + 1) % playlist().length];
     setCurrentMeditation(next);
-    !paused() && handlePlay(next.files.sound);
+    handlePlay(next.files.sound);
   }
 }
 
@@ -359,11 +359,15 @@ function Header() {
 
 function App() {
   return (
-    <div class="flex justify-center items-top pt-8 h-screen w-full bg-gray-200">
-      <div class="text-white w-[375px] h-[712px] bg-slate-900 p-3 space-y-4 rounded-md">
-        <Header />
-        <Artwork />
-        <Player />
+    <div class="relative flex justify-center items-top h-screen w-full bg-slate-900 overflow-auto">
+      <div class="text-white max-w-[375px]">
+        <div class="sticky top-0 bg-slate-900 py-4 px-3">
+          <Header />
+        </div>
+        <div class="px-3 space-y-4 pb-4">
+          <Artwork />
+          <Player />
+        </div>
       </div>
     </div>
   );
