@@ -13,6 +13,16 @@ import {
 } from 'solid-heroicons/solid';
 import { heart, magnifyingGlass, bars_3 } from 'solid-heroicons/outline';
 
+// https://medium.com/quick-code/100vh-problem-with-ios-safari-92ab23c852a8
+const appHeight = () => {
+  const doc = document.documentElement;
+  doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+};
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', appHeight);
+  appHeight();
+}
+
 let currentSrc;
 
 const [currentTime, setCurrentTime] = createSignal(0);
@@ -359,7 +369,7 @@ function Header() {
 
 function App() {
   return (
-    <div class="relative flex justify-center items-top h-screen w-full bg-slate-900 overflow-auto">
+    <div class="relative flex justify-center items-top h-app-height w-full bg-slate-900 overflow-auto">
       <div class="text-white max-w-[375px]">
         <div class="sticky top-0 bg-slate-900 py-4 px-3">
           <Header />
