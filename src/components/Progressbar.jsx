@@ -1,7 +1,7 @@
 import { createSignal } from 'solid-js';
-import SliderInput from './components/SliderInput';
-import * as player from './player';
-import { formatCurrentTime } from './util';
+import SliderInput from './SliderInput';
+import * as player from '../player';
+import { formatCurrentTime } from '../util';
 
 function Progressbar() {
   const [seeking, setSeeking] = createSignal(-1);
@@ -11,10 +11,10 @@ function Progressbar() {
         value={seeking() > 0 ? seeking() : player.progress()}
         onChange={(v) => setSeeking(v)}
         onRelease={(v) => {
-          if (player.audio.duration > 0) {
-            player.audio.currentTime = v * player.audio.duration;
+          if (player.music.duration > 0) {
+            player.music.currentTime = v * player.music.duration;
           }
-          player.setCurrentTime(v * player.audio.duration);
+          player.setCurrentTime(v * player.music.duration);
           setSeeking(-1);
         }}
       />

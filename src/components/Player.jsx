@@ -1,6 +1,6 @@
 import Mixer from './Mixer';
 import PlayerActions from './PlayerActions';
-import { default as Progressbar } from './SliderInput';
+import Progressbar from './Progressbar';
 import TrackInfoHeader from './TrackInfoHeader';
 import Box from './Box';
 
