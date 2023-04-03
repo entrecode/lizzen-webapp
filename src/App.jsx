@@ -1,198 +1,39 @@
-import { createSignal, createResource, createEffect, For } from 'solid-js';
+import { createSignal } from 'solid-js';
+import Header from './components/Header';
+import Artwork from './components/Artwork';
+import Player from './components/Player';
+import Menu from './components/Menu';
 
-// audio code
+export const [showMenu, setShowMenu] = createSignal(false);
 
-const ac = new AudioContext();
-
-const cache = {}; // string: Promise<ArrayBuffer>
-const loadBuffer = (url) => {
-  if (!cache[url]) {
-    cache[url] = fetch(url)
-      .then((res) => res.arrayBuffer())
-      .then((res) => ac.decodeAudioData(res))
-      .catch((err) => {
-        console.dir(err);
-        delete cache[url];
-      });
-  }
-  return cache[url];
-};
-
-const playBuffer = (buffer, options) => {
-  const { gain, time = ac.currentTime, offset = 0 } = options;
-  const src = ac.createBufferSource();
-  src.buffer = buffer;
-  src.loop = true;
-  src.start(time, offset % buffer.duration);
-  const g = ac.createGain();
-  g.gain.value = gain;
-  src.connect(g);
-  g.connect(ac.destination);
-  return { gainNode: g, sourceNode: src };
-};
-// const playSample = async url => playBuffer(await loadBuffer(url));
-
-function fetchTracks() {
-  return Promise.all([
-    loadBuffer('./audio/track1.mp3'),
-    loadBuffer('./audio/track2.mp3'),
-    loadBuffer('./audio/track3.mp3'),
-    loadBuffer('./audio/track4.mp3'),
-  ]);
-}
-
-// state
-const [gains, setGains] = createSignal([100, 100, 100, 100]);
-const [trackNodes, setTrackNodes] = createSignal();
-const [tracks] = createResource('load', fetchTracks);
-const [started, setStarted] = createSignal(false);
-const [progress, setProgress] = createSignal(0);
-const [scrubbing, setScrubbing] = createSignal(false);
-
-document.addEventListener('mouseup', () => {
-  setScrubbing(false);
-});
-
-let lastPlayStart,
-  interval,
-  phase = 0;
-
-let progressbar;
-createEffect(() => {
-  if (started()) {
-    interval = setInterval(() => {
-      const _progress = ac.currentTime - lastPlayStart + phase;
-      setProgress(_progress);
-      if (trackNodes().length) {
-        const total = trackNodes()[0].sourceNode.buffer.duration;
-        if (!scrubbing()) {
-          progressbar.value = ((_progress % total) / total) * 100;
-        }
-      }
-    }, 100);
-  } else if (interval) {
-    clearInterval(interval);
-  }
-});
-
-const stopAllNodes = () => {
-  trackNodes().forEach(({ sourceNode }) => sourceNode.stop());
-  setStarted(false);
-  const playPhaseLength = ac.currentTime - lastPlayStart;
-  phase += playPhaseLength;
-};
-const startAllNodes = (time, offset = 0) => {
-  lastPlayStart = time;
-  const _trackNodes = tracks().map((track, i) =>
-    playBuffer(track, {
-      time,
-      gain: gains()[i] / 100,
-      offset: offset,
-    }),
-  );
-  setTrackNodes(_trackNodes);
-  setStarted(true);
-};
-
-const getDuration = () => {
-  return trackNodes()[0].sourceNode.buffer.duration;
-};
-const seekTo = (normalizedPosition) => {
-  stopAllNodes();
-  phase = normalizedPosition * getDuration();
-  setProgress(phase);
-  startAllNodes(ac.currentTime, phase);
-};
-
-const handleTogglePlay = () => {
-  /* const dummyplayer = document.getElementById('dummyplayer');
-  dummyplayer.play(); */
-  if (!started()) {
-    ac.resume();
-    startAllNodes(ac.currentTime, phase);
-  } else {
-    stopAllNodes();
-  }
-};
-const handleUpdateGain = (index, value) => {
-  // update frontend
-  gains()[index] = value;
-  setGains([...gains()]);
-  if (trackNodes()) {
-    // update audio nodes only if already playing
-    const newValue = value / 100;
-    const { gainNode } = trackNodes()[index];
-    gainNode.gain.value = newValue;
-  }
-};
-// UI
-
-function Slider(props) {
-  return (
-    <div>
-      <label class="flex items-center space-x-2">
-        <span class="w-16">{props.label}</span>
-        <input
-          class="grow accent-slate-800"
-          type="range"
-          value={props.value}
-          disabled={props.disabled}
-          onInput={(e) => props.onChange(e.target.value)}
-        />
-        <span class="w-8">{props.value}%</span>
-      </label>
-    </div>
-  );
-}
-
-function Button(props) {
-  return (
-    <button class="text-white bg-slate-800 p-2 rounded-md" onClick={(e) => props.onClick(e)}>
-      {props.children}
-    </button>
-  );
-}
 function App() {
   return (
-    <div class="max-w-lg m-auto p-2 space-y-4 select-none">
-      <div class="grid grid-cols-2 gap-2">
-        <h1 class="text-xl flex items-center">Lizzen to this</h1>
-        <Button onClick={handleTogglePlay}>{started() ? 'Pause' : 'Play'}</Button>
-      </div>
-      <div class="grid gap-2">
-        {tracks.loading && 'LADEN...'}
-        <For each={tracks()}>
-          {(_, i) => (
-            <Slider
-              label={`Track ${i() + 1}`}
-              value={gains()[i()]}
-              onChange={(value) => handleUpdateGain(i(), value)}
-            />
-          )}
-        </For>
-        <div class="flex space-x-2">
-          <span class="w-16">{Math.round(progress())}</span>
-          <input
-            class="grow"
-            ref={progressbar}
-            type="range"
-            value={0}
-            onMouseDown={() => {
-              setScrubbing(true);
-            }}
-            onChange={(e) => {
-              if (trackNodes()) {
-                seekTo(e.target.value / 100);
-              }
-            }}
-          />
+    <div class="relative flex justify-center items-top h-app-height w-full bg-slate-900 overflow-auto">
+      <div class="text-white max-w-[675px]">
+        <div class="sticky top-0 bg-slate-900 py-4 px-3">
+          <Header />
         </div>
+        <div class="px-3 space-y-4 pb-4">
+          <Artwork />
+          <Player />
+        </div>
+        <Menu />
       </div>
     </div>
   );
 }
 
 export default App;
+
+// https://medium.com/quick-code/100vh-problem-with-ios-safari-92ab23c852a8
+const appHeight = () => {
+  const doc = document.documentElement;
+  doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+};
+if (typeof window !== 'undefined') {
+  window.addEventListener('resize', appHeight);
+  appHeight();
+}
 
 /*
 // this seems to only work if an audio element is playing somewhere
