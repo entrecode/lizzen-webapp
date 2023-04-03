@@ -21,7 +21,7 @@ function SliderInput(props) {
   });
 
   onCleanup(() => {
-    player.music.pause(); // just for hot reloading
+    player.pause(); // just for hot reloading
   });
   return (
     <div

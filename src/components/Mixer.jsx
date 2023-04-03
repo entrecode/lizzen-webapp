@@ -1,16 +1,17 @@
 import { Icon } from 'solid-heroicons';
 import { chatBubbleLeft, musicalNote, pencil } from 'solid-heroicons/solid';
-import { createSignal, For } from 'solid-js';
+import { For } from 'solid-js';
 import SliderInput from './SliderInput';
 import * as player from '../player';
 
-// TODO: add Lane component
+const {
+  music: { volume: musicVolume, setVolume: setMusicVolume },
+  voice: { volume: voiceVolume, setVolume: setVoiceVolume },
+} = player;
 
-const [voiceGain, setVoiceGain] = createSignal(1);
-const [musicGain, setMusicGain] = createSignal(1);
 const lanes = () => [
-  { icon: musicalNote, gain: musicGain, setGain: setMusicGain },
-  { icon: chatBubbleLeft, gain: voiceGain, setGain: setVoiceGain },
+  { icon: musicalNote, gain: musicVolume, setGain: setMusicVolume },
+  { icon: chatBubbleLeft, gain: voiceVolume, setGain: setVoiceVolume },
 ];
 
 function Mixer() {

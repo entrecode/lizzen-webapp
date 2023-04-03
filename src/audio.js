@@ -1,4 +1,4 @@
-import { createSignal } from 'solid-js';
+import { createSignal, createEffect } from 'solid-js';
 
 export function createAudio(props) {
   const audio = new Audio();
@@ -6,9 +6,10 @@ export function createAudio(props) {
   const [currentTime, setCurrentTime] = createSignal(0);
   const [duration, setDuration] = createSignal(0);
   const [paused, setPaused] = createSignal(true);
+  const [volume, setVolume] = createSignal(1);
 
   audio.addEventListener('loadeddata', () => {
-    console.log('loaded!', audio.duration);
+    // console.log('loaded!', audio.duration);
     setDuration(audio.duration);
     // The duration variable now holds the duration (in seconds) of the audio clip
   });
@@ -20,17 +21,22 @@ export function createAudio(props) {
   });
   audio.addEventListener('ended', () => props.onEnded?.());
 
+  createEffect(() => {
+    // console.log('set volume', volume());
+    audio.volume = volume();
+  });
+
   function startPlayback() {
-    console.log('canplay');
+    // console.log('canplay');
     setPaused(false);
     audio.play();
   }
   function load(src) {
-    console.log('load', src);
+    //console.log('load', src);
     audio.pause();
     audio.muted = false;
     if (currentSrc !== src) {
-      console.log('src has changed: go to 0', src);
+      // console.log('src has changed: go to 0', src);
       audio.src = src;
       audio.currentTime = 0;
     }
@@ -60,5 +66,5 @@ export function createAudio(props) {
     }
     setCurrentTime(audio.duration * normalized);
   }
-  return { audio, currentTime, duration, paused, toggle, pause, play, load, seekToProgress };
+  return { audio, currentTime, duration, paused, toggle, pause, play, load, seekToProgress, volume, setVolume };
 }
