@@ -11,10 +11,7 @@ function Progressbar() {
         value={seeking() > 0 ? seeking() : player.progress()}
         onChange={(v) => setSeeking(v)}
         onRelease={(v) => {
-          if (player.music.duration > 0) {
-            player.music.currentTime = v * player.music.duration;
-          }
-          player.setCurrentTime(v * player.music.duration);
+          player.seekToProgress(v);
           setSeeking(-1);
         }}
       />

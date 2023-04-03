@@ -11,13 +11,13 @@ function PlayerActions() {
         <Icon path={tv} class="w-7 h-7" />
       </Button>
       <div class="items-center space-x-4">
-        <Button onClick={() => player.handlePrev()}>
+        <Button onClick={() => player.prev()}>
           <Icon path={backward} class="w-7 h-7" />
         </Button>
-        <Button onClick={() => player.handleTogglePlay('./audio/Sound.mp3')}>
+        <Button onClick={() => player.toggle()}>
           {player.paused() ? <Icon path={play} class="w-7 h-7" /> : <Icon path={pause} class="w-7 h-7" />}
         </Button>
-        <Button onClick={() => player.handleNext()}>
+        <Button onClick={() => player.next()}>
           <Icon path={forward} class="w-7 h-7" />
         </Button>
       </div>
