@@ -11,7 +11,7 @@ import {
   pencil,
   musicalNote,
 } from 'solid-heroicons/solid';
-import { heart, magnifyingGlass, bars_3 } from 'solid-heroicons/outline';
+import { heart, magnifyingGlass, bars_3, xMark } from 'solid-heroicons/outline';
 
 // https://medium.com/quick-code/100vh-problem-with-ios-safari-92ab23c852a8
 const appHeight = () => {
@@ -43,6 +43,23 @@ audio.addEventListener('timeupdate', () => {
   setCurrentTime(audio.currentTime);
   setDuration(audio.duration);
 });
+
+/*
+async function loadAudio(src, audio) {
+  return new Promise((resolve, reject) => {
+    const event = 'canplay';
+    audio.addEventListener(event, function ready() {
+      audio.removeEventListener(event, ready);
+      resolve(audio);
+    });
+    audio.src = src;
+  });
+}*/
+
+// TODO: use loadAudio inside onMount https://www.solidjs.com/tutorial/lifecycles_onmount
+// TODO: use onCleanup to pause?
+// TODO: find way to use onMount and onCleanup to subscribe to events
+
 /*audio.addEventListener('canplay', () => {
   console.log('can play..');
 });*/
@@ -227,11 +244,7 @@ function Button(props) {
   );
 }
 
-function handleAirplay() {
-  console.log('tbd: airplay');
-}
-
-const [showMixer, setShowMixer] = createSignal(true);
+const [showMixer, setShowMixer] = createSignal(false);
 
 function handleToggleMixer() {
   setShowMixer(!showMixer());
@@ -250,7 +263,7 @@ function MeditationInfoHeader() {
             console.log('TBD: fav');
           }}
         >
-          <Icon path={heart} class="w-6 h-6" />
+          <Icon path={heart} class="w-7 h-7" />
         </button>
       </div>
     </div>
@@ -260,22 +273,22 @@ function MeditationInfoHeader() {
 function PlayerActions() {
   return (
     <nav class="flex justify-between">
-      <Button onClick={() => handleAirplay()}>
-        <Icon path={tv} class="w-6 h-6" />
+      <Button onClick={tbd}>
+        <Icon path={tv} class="w-7 h-7" />
       </Button>
       <div class="items-center space-x-4">
         <Button onClick={() => handlePrev()}>
-          <Icon path={backward} class="w-6 h-6" />
+          <Icon path={backward} class="w-7 h-7" />
         </Button>
         <Button onClick={() => handleTogglePlay('./audio/Sound.mp3')}>
-          {paused() ? <Icon path={play} class="w-6 h-6" /> : <Icon path={pause} class="w-6 h-6" />}
+          {paused() ? <Icon path={play} class="w-7 h-7" /> : <Icon path={pause} class="w-7 h-7" />}
         </Button>
         <Button onClick={() => handleNext()}>
-          <Icon path={forward} class="w-6 h-6" />
+          <Icon path={forward} class="w-7 h-7" />
         </Button>
       </div>
       <Button onClick={() => handleToggleMixer()}>
-        <Icon path={adjustmentsHorizontal} class="w-6 h-6" />
+        <Icon path={adjustmentsHorizontal} class="w-7 h-7" />
       </Button>
     </nav>
   );
@@ -284,6 +297,8 @@ function PlayerActions() {
 function Box(props) {
   return <div class=" bg-slate-800 rounded-lg p-4 space-y-4">{props.children}</div>;
 }
+
+// TODO: add Lane component
 
 const [voiceGain, setVoiceGain] = createSignal(1);
 const [musicGain, setMusicGain] = createSignal(1);
@@ -294,11 +309,14 @@ const lanes = () => [
 
 function Mixer() {
   return (
-    <div class="px-3">
+    <div
+      class="px-3 overflow-hidden transition-all duration-500"
+      classList={{ 'h-1': !showMixer(), 'h-24': showMixer() }}
+    >
       <For each={lanes()}>
         {(lane) => (
           <div class="flex justify-between items-center space-x-4 py-3">
-            <Icon path={lane.icon} class="w-6 h-6" />
+            <Icon path={lane.icon} class="w-7 h-7" />
             <div class="grow">
               <SliderInput value={lane.gain()} onChange={(value) => lane.setGain(value)} />
             </div>
@@ -316,7 +334,7 @@ function Player() {
       <MeditationInfoHeader />
       <Progressbar />
       <PlayerActions />
-      {showMixer() && <Mixer />}
+      <Mixer />
     </Box>
   );
 }
@@ -331,6 +349,56 @@ function Artwork() {
   );
 }
 
+function clickOutside(el, accessor) {
+  const onClick = (e) => !el.contains(e.target) && accessor()?.();
+  document.body.addEventListener('click', onClick);
+
+  onCleanup(() => document.body.removeEventListener('click', onClick));
+}
+
+const [showMenu, setShowMenu] = createSignal(false);
+
+function tbd() {
+  console.log('tbd!');
+}
+
+function Menu() {
+  return (
+    <div
+      class="fixed bg-slate-900 h-app-height w-full max-w-[400px] top-0 right-0 duration-500 p-4 transition-transform text-white space-y-6"
+      classList={{ 'translate-x-0': showMenu(), 'translate-x-full': !showMenu() }}
+      use:clickOutside={() => setShowMenu(false)}
+    >
+      <div class="flex justify-between">
+        <div class="flex items-center space-x-2">
+          <img src="./img/avatar.png" class="w-8 h-8" />
+          <span class="text-sm">Hallo Jan!</span>
+        </div>
+        <button onClick={() => setShowMenu(false)}>
+          <Icon path={xMark} class="w-7 h-7" />
+        </button>
+      </div>
+      <div class="space-y-3">
+        <button class="p-2 w-full rounded-md bg-slate-800" onClick={tbd}>
+          Mein Account!
+        </button>
+        <button class="p-2 w-full rounded-md bg-slate-800" onClick={tbd}>
+          Benachrichtigungen
+        </button>
+        <button class="p-2 w-full rounded-md bg-slate-800" onClick={tbd}>
+          Support und FAQ
+        </button>
+        <button class="p-2 w-full rounded-md bg-slate-800" onClick={tbd}>
+          Datenschutz
+        </button>
+        <button class="p-2 w-full rounded-md bg-slate-800" onClick={tbd}>
+          Impressum
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Header() {
   return (
     <nav class="flex justify-between items-center px-1">
@@ -338,29 +406,17 @@ function Header() {
         <img src="./img/avatar.png" class="w-8 h-8" />
         <span class="text-sm">Hallo Jan!</span>
       </div>
-      <div class="flex space-x-2">
-        <button
-          onClick={() => {
-            console.log('fav');
-          }}
-        >
-          <Icon path={heart} class="w-6 h-6" />
+      <div class="flex space-x-3">
+        <button onClick={tbd}>
+          <Icon path={heart} class="w-7 h-7" />
         </button>
 
-        <button
-          onClick={() => {
-            console.log('search');
-          }}
-        >
-          <Icon path={magnifyingGlass} class="w-6 h-6" />
+        <button onClick={tbd}>
+          <Icon path={magnifyingGlass} class="w-7 h-7" />
         </button>
 
-        <button
-          onClick={() => {
-            console.log('menu');
-          }}
-        >
-          <Icon path={bars_3} class="w-6 h-6" />
+        <button onClick={() => setShowMenu((s) => !s)}>
+          <Icon path={bars_3} class="w-7 h-7" />
         </button>
       </div>
     </nav>
@@ -370,7 +426,7 @@ function Header() {
 function App() {
   return (
     <div class="relative flex justify-center items-top h-app-height w-full bg-slate-900 overflow-auto">
-      <div class="text-white max-w-[375px]">
+      <div class="text-white max-w-[675px]">
         <div class="sticky top-0 bg-slate-900 py-4 px-3">
           <Header />
         </div>
@@ -378,6 +434,7 @@ function App() {
           <Artwork />
           <Player />
         </div>
+        <Menu />
       </div>
     </div>
   );
